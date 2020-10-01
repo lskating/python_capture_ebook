@@ -40,54 +40,96 @@ print("--------------------------------------------")
 print("                  doing                     ")
 print("--------------------------------------------")
 
-
+date_now = datetime.datetime.now().strftime('%Y%m%d')
 File_Path = os.getcwd()	+ "\\"	#获取到当前文件的目录
 img_temp_path = File_Path + "temp\\"
 
-if not os.path.exists(img_temp_path):
-	os.makedirs(img_temp_path)
+#采取新建文件夹的方式避免删除已有temp文件夹中的文件
+for i in range(1,100):
+    if os.path.exists(img_temp_path):
+        img_temp_path = File_Path + "temp_" + str(str(i).zfill(2)) + "\\"
+    elif not os.path.exists(img_temp_path):
+        os.makedirs(img_temp_path)                         
+        break
 
-date_now = datetime.datetime.now().strftime('%Y%m%d')
-
+height = 0
+weight = 0
 
 def getBookSize(picture_i):
     image = cv2.imread(picture_i)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    height = np.array(gray).shape[0]
-    weight = np.array(gray).shape[1]
-    # print(weight, height)    
-    edges_x = []
-    edges_y = []
+    global height
+    global weight   
+    height = np.array(gray).shape[0]        # y
+    weight = np.array(gray).shape[1]        # x
+    # print(weight, height)                   # 2560 1600
+    gray_edges_x = []
+    gray_edges_y = []
+    # # print(gray)
+    # gray[y,x]
+    # print(gray[100,500])      # 255
+    # print(gray[500,100])      # 136
+    # print(gray[500,300])      # 252
 
-    for j in range(int(300/2560*weight),int(2300/2560*weight)):
+    # gray regtangular
+    for j in range(int(weight/5)):
         time = 0
-        for i in range(height):
-            if gray[i][j] >= 230:       # find white
+        for i in range(int(height/5)):
+            if 130 <=gray[i*5][j*5] <= 140:       # find gray
+                # print(i,j,"gray")
                 time = time + 1
-                if time > 0.3 * height:
-                    edges_x.append(j)
+                if time > 0.80 * height / 5:
+                    gray_edges_x.append(j*5)                          
                     break
-    left = min(edges_x)
-    right = max(edges_x)
-    # print(left,right)
+    gray_left = min(gray_edges_x)
+    gray_right = max(gray_edges_x)
+    # print("gray_left,gray_right = ",gray_left,gray_right)
+    for j in range(int(height/5)):
+        time = 0
+        for i in range(int(weight/5)):
+            if 130 <=gray[j*5][i*5] <= 140:       # find gray
+                # print(j,i,"gray")
+                time = time + 1
+                if time > 0.80 * weight / 5:
+                    gray_edges_y.append(j*5)                          
+                    break
+    gray_top = min(gray_edges_y)
+    gray_bottom = max(gray_edges_y)
+    # print("gray_top,gray_bottom  = ",gray_top,gray_bottom)
 
-    for i in range(int(150/1600*height), int(1545/1600*height)):
+    # white regtangular
+    white_edges_x = []
+    white_edges_y = []
+    for j in range(int(gray_left/5),int(gray_right/5)):
         time = 0
-        for j in range(weight):
-            if gray[i][j] >= 230:    # white
-                # print(i,j,gray[i][j],">=")
+        for i in range(int(gray_top/5),int(gray_bottom/5)):
+            if gray[i*5][j*5] >= 245:       # find white
+                # print(i,j,"gray")
                 time = time + 1
-                if time >= 0.30 * weight:# and time < 0.45 * weight:
-                    edges_y.append(i)
+                if time > 0.60 * height / 5:
+                    white_edges_x.append(j*5)                          
                     break
-    # print(edges_y)
-    top = min(edges_y)
-    bottom= max(edges_y)
-    # print(top,bottom)
-    pic_size = (left, top, right, bottom)
-    # print(pic_size)
+    white_left = min(white_edges_x)
+    white_right = max(white_edges_x)
+    # print("white_left,white_right = ",white_left,white_right)
+
+    for j in range(int(gray_top/5),int(gray_bottom/5)):
+        time = 0
+        for i in range(int(gray_left/5),int(gray_right/5)):
+            if gray[j*5][i*5] >= 245:       # find white
+                # print(j,i,"gray")
+                time = time + 1
+                if time > 0.50 * weight / 5:
+                    white_edges_y.append(j*5)                          
+                    break
+    white_top = min(white_edges_y)
+    white_bottom = max(white_edges_y)
+    # print("white_top,white_bottom = ",white_top,white_bottom)
+    pic_size = (white_left, white_top, white_right, white_bottom)
+    print(pic_size)
     return pic_size
+
 
 def combine2Pdf(folderPath, pdfFilePath):
     files = os.listdir(folderPath)
@@ -136,7 +178,9 @@ def PageDown():
 
 
 x = range(1,pages + 1)
+# default_size = (0,0,weight,height)
 default_size = (0,0,w,h)
+print(default_size)
 size_all = default_size
 
 for num in range(1,6):
@@ -166,8 +210,6 @@ for num in range(1,6):
             else:
                 picGrab(picture_i,size_right)
                 PageDown()
-
-
 
 
 pdfFile = File_Path + str(date_now) + "_00.pdf"
