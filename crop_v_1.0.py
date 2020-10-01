@@ -17,11 +17,11 @@ import win32gui
 
 ####################################################
 pages = int(input("pages = "))
-n = int(pages / 2)	# times, the prtscr times you want
 ####################################################
 # screen_x = win32api.GetSystemMetrics(win32con.SM_CXSCREEN)
 # screen_y = win32api.GetSystemMetrics(win32con.SM_CYSCREEN)
 # print(screen_x,screen_y)
+
 hDC = win32gui.GetDC(0)
 w = win32print.GetDeviceCaps(hDC, win32con.DESKTOPHORZRES)
 h = win32print.GetDeviceCaps(hDC, win32con.DESKTOPVERTRES)
@@ -55,14 +55,14 @@ def getBookSize(picture_i):
 
     height = np.array(gray).shape[0]
     weight = np.array(gray).shape[1]
-    print(weight, height)    
+    # print(weight, height)    
     edges_x = []
     edges_y = []
 
     for j in range(int(300/2560*weight),int(2300/2560*weight)):
         time = 0
         for i in range(height):
-            if gray[i][j] >= 240:       # find white
+            if gray[i][j] >= 230:       # find white
                 time = time + 1
                 if time > 0.3 * height:
                     edges_x.append(j)
@@ -71,10 +71,10 @@ def getBookSize(picture_i):
     right = max(edges_x)
     # print(left,right)
 
-    for i in range(int(150/1600 * height), int(1545 / 1600 * height)):
+    for i in range(int(150/1600*height), int(1545/1600*height)):
         time = 0
         for j in range(weight):
-            if gray[i][j] >= 240:    # white
+            if gray[i][j] >= 230:    # white
                 # print(i,j,gray[i][j],">=")
                 time = time + 1
                 if time >= 0.30 * weight:# and time < 0.45 * weight:
@@ -85,7 +85,7 @@ def getBookSize(picture_i):
     bottom= max(edges_y)
     # print(top,bottom)
     pic_size = (left, top, right, bottom)
-    print(pic_size)
+    # print(pic_size)
     return pic_size
 
 def combine2Pdf(folderPath, pdfFilePath):
@@ -123,27 +123,50 @@ def picGrab(picture_i,pic_size):
     pic = ImageGrab.grab(pic_size)   #default as full screeen, also a rectangle (x0,y0,x1,y1)
     pic.save(picture_i)
 
+def PageUp():
+    win32api.keybd_event(0x21,0,0,0)    # use PageUp to changge code is 33(0x21)
+    win32api.keybd_event(0x21,0,win32con.KEYEVENTF_KEYUP,0)
+    time.sleep(1.2)
 
-x = range(1,n+1)
-default_size = (0,0,w,h)
-size_all = default_size
-for i in x:
-    picture_i = img_temp_path + str(date_now) + "_" + str(str(i).zfill(4)) + ".png"
-    if i == 1:
-        picGrab(picture_i,default_size)
-        picGrab(picture_i,getBookSize(picture_i))
-    elif i == 2:
-        picGrab(picture_i,default_size)
-        size_all = getBookSize(picture_i)
-        picGrab(picture_i,size_all)
-        
-    elif i >=3:
-        picGrab(picture_i,size_all)
-    else:
-        pass
+def PageDown():
     win32api.keybd_event(0x22,0,0,0)    # use PageDown to changge code is 34(0x22)
     win32api.keybd_event(0x22,0,win32con.KEYEVENTF_KEYUP,0)
-    time.sleep(1.5)
+    time.sleep(1.2)
+
+
+x = range(1,pages + 1)
+default_size = (0,0,w,h)
+size_all = default_size
+
+for num in range(1,6):
+    if num <= 3:
+        PageDown()
+    elif num == 4:
+        picture_temp = img_temp_path + str(date_now) + "_size_crop.png"
+        picGrab(picture_temp,default_size)
+        size_all = (x0,y0,x1,y1) =  getBookSize(picture_temp)
+        size_left = (x0,y0,int((x1+x0)/2),y1)
+        size_right = (int((x1+x0)/2),y0,x1,y1)
+        size_center = (int((3*x0+x1)/4),y0,int((3*x1+x0)/4),y1)
+        os.remove(picture_temp)
+        PageUp()
+        PageUp()
+        PageUp()
+    else:
+        for i in x:
+            picture_i = img_temp_path + str(date_now) + "_" + str(str(i).zfill(4)) + ".png"
+            if i == 1:
+                picGrab(picture_i,size_center)
+                PageDown()
+            elif  i == pages:
+                picGrab(picture_i,size_center)
+            elif i % 2 == 0:
+                picGrab(picture_i,size_left)
+            else:
+                picGrab(picture_i,size_right)
+                PageDown()
+
+
 
 
 pdfFile = File_Path + str(date_now) + "_00.pdf"
