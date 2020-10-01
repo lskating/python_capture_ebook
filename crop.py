@@ -15,9 +15,6 @@ import progressbar
 import win32api
 import win32con
 
-input_img_path = "E:/01. pic/pics_crop/origin/"
-output_img_path = "E:/01. pic/pics_crop/target/"
-date_now = datetime.datetime.now().strftime('%Y%m%d')
 
 ####################################################
 pages = int(input("pages = "))
@@ -36,13 +33,36 @@ print("--------------------------------------------")
 print("                  doing                     ")
 print("--------------------------------------------")
 
-def combine2Pdf(folderPath, pdfFilePath):
-    files = os.listdir(folderPath)
+
+File_Path = os.getcwd()	+ "\\"	#获取到当前文件的目录
+img_temp_path = File_Path + "temp\\"
+
+if not os.path.exists(img_temp_path):
+	os.makedirs(img_temp_path)
+
+date_now = datetime.datetime.now().strftime('%Y%m%d')
+
+def del_file(filepath):
+    """
+    删除某一目录下的所有文件或文件夹
+    :param filepath: 路径
+    :return:
+    """
+    del_list = os.listdir(filepath)
+    for f in del_list:
+        file_path = os.path.join(filepath, f)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+        elif os.path.isdir(file_path):
+            shutil.rmtree(file_path)
+
+def combine2Pdf(img_temp_path, File_Path):
+    files = os.listdir(img_temp_path)
     pngFiles = []
     sources = []
     for file in files:
         if 'png' in file:
-            pngFiles.append(folderPath + file)
+            pngFiles.append(img_temp_path + file)
     pngFiles.sort()
     output = Image.open(pngFiles[0])
     pngFiles.pop(0)
@@ -51,41 +71,48 @@ def combine2Pdf(folderPath, pdfFilePath):
         if pngFile.mode == "RGB":
             pngFile = pngFile.convert("RGB")
         sources.append(pngFile)
-    output.save(pdfFilePath, "pdf", save_all=True, append_images=sources)
+    output.save(File_Path, "pdf", save_all=True, append_images=sources)
 
 x = np.arange(1,n+1,1)
 for i in x:
 	pic = ImageGrab.grab((410,185,2145,1520))	#default as full screeen, also a rectangle (x0,y0,x1,y1)
-	picture_name = input_img_path + str(date_now) + "_" + str(str(i).zfill(4)) + ".png"
+	picture_name = img_temp_path + str(date_now) + "_" + str(str(i).zfill(4)) + ".png"
 	pic.save(picture_name)
 	win32api.keybd_event(0x22,0,0,0)	# use PageDown to changge code is 34(0x22)
 	win32api.keybd_event(0x22,0,win32con.KEYEVENTF_KEYUP,0)
 	time.sleep(1.5)
 
-pdfFile = output_img_path + str(date_now) + ".pdf"
+pdfFile = File_Path + str(date_now) + "_00.pdf"
 for i in range(100):
 	if os.path.isfile(pdfFile):
-		pdfFile = output_img_path + str(date_now) + "_" +str(i) + ".pdf"
+		pdfFile = File_Path + str(date_now) + "_" +str(str(i).zfill(2)) + ".pdf"
 	else:
 		break
 
-combine2Pdf(input_img_path, pdfFile)
+
+os.system('cls')
+combine2Pdf(img_temp_path, pdfFile)
+print("-------------------------------------------------------------------------")
 print("file has been saved as " + pdfFile)
+print("-------------------------------------------------------------------------")
+del_file(img_temp_path)
+os.rmdir(img_temp_path)
+
 
 
 
 # ------------------------------------------------------------------------------
 # ### size crop
-# def update(input_img_path, output_img_path):
-#     image = cv2.imread(input_img_path)
+# def update(File_Path, File_Path):
+#     image = cv2.imread(File_Path)
 #     print(image.shape)
 
 #     # inpur your target size here
 #     cropped = image[60:1520, 300:2260] # 裁剪坐标为[y0:y1, x0:x1]
-#     cv2.imwrite(output_img_path, cropped)
+#     cv2.imwrite(File_Path, cropped)
 
-# dataset_dir = input_img_path
-# output_dir  = output_img_path
+# dataset_dir = File_Path
+# output_dir  = File_Path
  
 # # 获得需要转化的图片路径并生成目标路径
 # image_filenames = [(os.path.join(dataset_dir, x), os.path.join(output_dir, x))
