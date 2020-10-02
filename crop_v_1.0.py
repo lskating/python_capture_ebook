@@ -212,16 +212,30 @@ for num in range(1,6):
                 PageDown()
 
 
-pdfFile = File_Path + str(date_now) + "_00.pdf"
+# 20201002 changed the name of pdfFile
+auto_pdfFile = File_Path + str(date_now) + "_00.pdf"
 for i in range(1,100):
-	if os.path.isfile(pdfFile):
-		pdfFile = File_Path + str(date_now) + "_" + str(str(i).zfill(2)) + ".pdf"
-	else:
-		break
+    if os.path.isfile(auto_pdfFile):
+        auto_pdfFile = File_Path + str(date_now) + "_" + str(str(i).zfill(2)) + ".pdf"
+    else:
+        break
+check_box = ['y','Y','n','N']
+rename_check = str(input("Do you want to rename the file? [y]/n "))
+while rename_check not in check_box:
+    rename_check = str(input("please input [y]/n "))
+
+if rename_check == 'y' or rename_check == 'Y':
+    name_temp = str(input("please input the name of this book: "))
+    while not len(name_temp):
+        name_temp = str(input("please input the name of this book (not blank): "))
+    file_name = File_Path + name_temp + ".pdf"
+else:
+    file_name = auto_pdfFile
+
 os.system('cls')
-combine2Pdf(img_temp_path, pdfFile)
+combine2Pdf(img_temp_path, file_name)
 print("-------------------------------------------------------------------")
-print("file has been saved as " + pdfFile)
+print("file has been saved as " + file_name)
 print("-------------------------------------------------------------------")
 del_file(img_temp_path)
 os.rmdir(img_temp_path)
