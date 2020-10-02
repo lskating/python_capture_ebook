@@ -16,6 +16,8 @@ import win32con
 import win32print
 import win32gui
 
+import ctypes
+
 ####################################################
 pages = int(input("pages = "))
 ####################################################
@@ -26,15 +28,20 @@ pages = int(input("pages = "))
 hDC = win32gui.GetDC(0)
 w = win32print.GetDeviceCaps(hDC, win32con.DESKTOPHORZRES)
 h = win32print.GetDeviceCaps(hDC, win32con.DESKTOPVERTRES)
-print(w,h)
+# print(w,h)
 
-for num in range(5,0,-1):
-	os.system('cls')
-	print("--------------------------------------------")
-	print("    please switch to the capture screen!")
-	print("     this will start in {} second(s).".format(num))
-	print("--------------------------------------------")
-	time.sleep(1)
+for num in range(2,0,-1):   # 3 seconds
+    os.system('cls')
+    print("--------------------------------------------")
+    print("    please switch to the capture screen!")
+    print("     this will start in {} second(s).".format(num))
+    print("--------------------------------------------")
+    if num == 1:
+        ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(),6)        # minimis
+        # refer to: https://www.cnblogs.com/candyzkn/p/4428590.html
+    else:
+        pass
+    time.sleep(1)
 os.system('cls')
 print("--------------------------------------------")
 print("                  doing                     ")
@@ -180,7 +187,7 @@ def PageDown():
 x = range(1,pages + 1)
 # default_size = (0,0,weight,height)
 default_size = (0,0,w,h)
-print(default_size)
+# print(default_size)
 size_all = default_size
 
 for num in range(1,6):
@@ -212,6 +219,7 @@ for num in range(1,6):
                 PageDown()
 
 
+ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(),9)        # 3
 # 20201002 changed the name of pdfFile
 auto_pdfFile = File_Path + str(date_now) + "_00.pdf"
 for i in range(1,100):
