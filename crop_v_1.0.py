@@ -51,16 +51,19 @@ def getBookSize(picture_i):
     # gray[y,x]
     # print(gray[100,500])      # 255
     # print(gray[500,100])      # 136
-    # print(gray[500,300])      # 252
+    print(gray[500,300])      # 252
+    print(gray[600,600])
 
     # gray regtangular
     for j in range(int(weight/5)):
         time = 0
         for i in range(int(height/5)):
-            if 130 <=gray[i*5][j*5] <= 140:       # find gray
+            # find gray 136 for reserves.lib.tsinghua.edu.cn
+            # find gray 100 for cajviewer
+            if 100 <=gray[i*5][j*5] <= 140:
                 # print(i,j,"gray")
                 time = time + 1
-                if time > 0.80 * height / 5:
+                if time > 0.80 * height / 5:      # 0.8 for reserves.lib.tsinghua.edu.cn
                     gray_edges_x.append(j*5)                          
                     break
     gray_left = min(gray_edges_x)
@@ -69,7 +72,7 @@ def getBookSize(picture_i):
     for j in range(int(height/5)):
         time = 0
         for i in range(int(weight/5)):
-            if 130 <=gray[j*5][i*5] <= 140:       # find gray
+            if 100 <=gray[j*5][i*5] <= 140:       # find gray
                 # print(j,i,"gray")
                 time = time + 1
                 if time > 0.80 * weight / 5:
@@ -85,7 +88,7 @@ def getBookSize(picture_i):
     for j in range(int(gray_left/5),int(gray_right/5)):
         time = 0
         for i in range(int(gray_top/5),int(gray_bottom/5)):
-            if gray[i*5][j*5] >= 245:       # find white
+            if gray[i*5][j*5] >= 230:       # find white origion threshold 235
                 # print(i,j,"gray")
                 time = time + 1
                 if time > 0.60 * height / 5:
@@ -98,7 +101,7 @@ def getBookSize(picture_i):
     for j in range(int(gray_top/5),int(gray_bottom/5)):
         time = 0
         for i in range(int(gray_left/5),int(gray_right/5)):
-            if gray[j*5][i*5] >= 245:       # find white
+            if gray[j*5][i*5] >= 230:       # find white
                 # print(j,i,"gray")
                 time = time + 1
                 if time > 0.50 * weight / 5:
@@ -268,7 +271,7 @@ try:
     os.rmdir(img_temp_path)
 
 except:
-    os.system('cls')
+    os.system('cls') 
     ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(),9)
     # https://www.cnblogs.com/daofaziran/p/9015284.html
     print("-------------------------------------------------------------------")
